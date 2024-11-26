@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Metal Music</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .actions {
+            margin-top: 20px;
+        }
+        button {
+            margin: 5px;
+            padding: 10px 15px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .output {
+            margin-top: 20px;
+            width: 80%;
+            border: 1px solid #ccc;
+            padding: 10px;
+            border-radius: 5px;
+            background: #f9f9f9;
+            overflow-y: auto;
+            max-height: 300px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Metal Music</h1>
+    <div class="container">
+        <div class="actions">
+            <button onclick="agregarProducto()">Agregar Producto</button>
+            <button onclick="procesarVenta()">Procesar Venta</button>
+            <button onclick="mostrarInventario()">Mostrar Inventario</button>
+            <button onclick="mostrarVentas()">Mostrar Ventas</button>
+            <button onclick="deshacerAccion()">Deshacer Acción</button>
+            <button onclick="mostrarTareasPendientes()">Mostrar Tareas Pendientes</button>
+        </div>
+        <div class="output" id="output">
+            <p>Resultados de las acciones aparecerán aquí.</p>
+        </div>
+    </div>
+
+    <script>
+        // Variables globales
+        let inventario = {};
+        let ventas = [];
+        let pilaAcciones = [];
+        let colaTareas = [];
+
+        function agregarProducto() {
+            let codigo = prompt("Ingrese el código del producto:");
+            let nombre = prompt("Ingrese el nombre del producto:");
+            let categoria = prompt("Ingrese la categoría del producto:");
+            let artista = prompt("Ingrese el artista:");
+            let genero = prompt("Ingrese el género:");
+            let precio = parseFloat(prompt("Ingrese el precio:"));
+            let cantidad = parseInt(prompt("Ingrese la cantidad:"));
+
+            inventario[codigo] = { nombre, categoria, artista, genero, precio, cantidad };
+            pilaAcciones.push(`Producto agregado: ${nombre}`);
+
+            actualizarSalida(`Producto ${nombre} agregado exitosamente.`);
+        }
+
+        function procesarVenta() {
+            let cliente = prompt("Ingrese el nombre del cliente:");
+            let codigoProducto = prompt("Ingrese el código del producto:");
+            let cantidad = parseInt(prompt("Ingrese la cantidad:"));
+            let descuento = parseFloat(prompt("Ingrese el descuento (%):"));
+
+            if (inventario[codigoProducto]) {
+                let producto = inventario[codigoProducto];
+                if (producto.cantidad >= cantidad) {
+                    producto.cantidad -= cantidad;
+                    ventas.push({ cliente, producto: { ...producto }, cantidad, descuento });
+                    pilaAcciones.push(`Venta procesada para ${cliente}`);
+                    actualizarSalida(`Venta procesada para ${cliente}.`);
+                } else {
+                    colaTareas.push(`Venta pendiente: ${cliente} solicitó ${cantidad} de ${producto.nombre}`);
+                    actualizarSalida(`Stock insuficiente. Venta agregada a tareas pendientes.`);
+                }
+            } else {
+                actualizarSalida("El producto no existe en el inventario.");
+            }
+        }
+
+        function mostrarInventario() {
+            let resultado = "<h3>Inventario:</h3>";
+            for (let codigo in inventario) {
+                let producto = inventario[codigo];
+                resultado += `<p>${codigo} - ${producto.nombre}, ${producto.categoria}, ${producto.artista}, ${producto.genero}, $${producto.precio}, Cantidad: ${producto.cantidad}</p>`;
+            }
+            actualizarSalida(resultado || "El inventario está vacío.");
+        }
+
+        function mostrarVentas() {
+            let resultado = "<h3>Ventas Realizadas:</h3>";
+            ventas.forEach((venta, index) => {
+                resultado += `<p>${index + 1}. Cliente: ${venta.cliente}, Producto: ${venta.producto.nombre}, Cantidad: ${venta.cantidad}, Descuento: ${venta.descuento}%</p>`;
+            });
+            actualizarSalida(resultado || "No hay ventas realizadas.");
+        }
+
+        function deshacerAccion() {
+            if (pilaAcciones.length > 0) {
+                let ultimaAccion = pilaAcciones.pop();
+                actualizarSalida(`Se deshizo la última acción: ${ultimaAccion}`);
+            } else {
+                actualizarSalida("No hay acciones para deshacer.");
+            }
+        }
+
+        function mostrarTareasPendientes() {
+            let resultado = "<h3>Tareas Pendientes:</h3>";
+            colaTareas.forEach((tarea, index) => {
+                resultado += `<p>${index + 1}. ${tarea}</p>`;
+            });
+            actualizarSalida(resultado || "No hay tareas pendientes.");
+        }
+
+        function actualizarSalida(mensaje) {
+            document.getElementById("output").innerHTML = mensaje;
+        }
+    </script>
+</body>
+</html>
